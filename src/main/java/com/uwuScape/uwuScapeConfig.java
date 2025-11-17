@@ -59,6 +59,14 @@ public interface uwuScapeConfig extends Config
 	{
 		return true;
 	}
+/*    @ConfigItem(
+            keyName = "convertRightClick",
+            name = "Convert Right click Options",
+            description = "Whether to convert right click options",
+            section = uwuify,
+            position = 5
+    )
+    default boolean convertRightClick() { return true; }*/
 
 }
 

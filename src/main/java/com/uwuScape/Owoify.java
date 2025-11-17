@@ -1,6 +1,9 @@
 package com.uwuScape;
-//literally just copypasted this file from idyl with only some changes
+//literally just copypasted this file from idyl, just added more stuff, fixed some issues, added options and the like
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 
 public class Owoify {
     private static Map<String, String> wordMap = new HashMap();
@@ -12,19 +15,22 @@ public class Owoify {
             "*giggles* ",
             "hehe ",
             "rawr~ ",
+            "rawr x3",
             "teehee ",
             "*boops your nose* ",
             "*runs in circles* ",
             "H-hewwo?? ",
             "*licks paw* ",
             "nya~ ",
-            "*shakes tail* "
+            "*shakes tail* ",
+            "gib pats pws! "
             );
 
-    private static final List<String> emojiSuffixes = Arrays.asList("~", " :3", " x3", " ^_^", " UwU", " owo");
+    private static final List<String> emojiSuffixes = Arrays.asList("~", " :3", " x3", " ^_^", " UwU", " owo", "OwO", "uwu");
 
     static {
         wordMap.put("love", "wuv");
+        wordMap.put("morning", "meowning");
         wordMap.put("beauty", "bewti");
         wordMap.put("mr", "mistuh");
         wordMap.put("dog", "doggo");
@@ -43,13 +49,14 @@ public class Owoify {
         wordMap.put("penis", "peepee");
         wordMap.put("damn", "darn");
         wordMap.put("kill", "hug");
-        wordMap.put("dead", "sweepy");
+        wordMap.put("dead", "eepy");
         wordMap.put("sleepy", "eepy");
         wordMap.put("death", "etewnaw west");
         wordMap.put("no", "nuuu");
         wordMap.put("yes", "yus~");
         wordMap.put("you", "u");
-        wordMap.put("you're", "ur");
+        wordMap.put("you're", "uw");
+        wordMap.put("your", "uw");
         wordMap.put("me", "mew");
         wordMap.put("my", "mai");
         wordMap.put("cute", "kawaii~");
@@ -110,5 +117,54 @@ public class Owoify {
             result += emojiSuffixes.get((int)(Math.random() * emojiSuffixes.size()));
         }
         return result;
+    }
+
+    public static String convertMenuText(String text, uwuScapeConfig config) {
+        if (config.owoifyMode() == OwoifyMode.OFF) {
+            return text;
+        }
+
+        // Replace <br> with space just like normal convert
+        text = text.replaceAll("(?i)<br\\s*/?>", " ");
+
+        // Regex splits into tags (<...>) or words (\S+)
+        Pattern pattern = Pattern.compile("(<[^>]+>|\\S+)");
+        Matcher matcher = pattern.matcher(text);
+
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        while (matcher.find()) {
+            String token = matcher.group();
+
+            // Preserve tags as-is
+            if (token.startsWith("<") && token.endsWith(">")) {
+                result.append(token);
+            } else {
+                // strip non-alpha chars for lookup
+                String cleanWord = token.replaceAll("[^a-zA-Z]", "").toLowerCase();
+                String punctuation = token.replaceAll("[a-zA-Z]", "");
+                String replaced = wordMap.get(cleanWord);
+
+                if (!first) result.append(" "); // preserve spaces
+
+                if (replaced != null) {
+                    result.append(replaced).append(punctuation);
+                } else if (config.owoifyMode() == OwoifyMode.FULL) {
+                    for (char c : token.toCharArray()) {
+                        char newChar = c;
+                        if (c == 'l' || c == 'r') newChar = 'w';
+                        else if (c == 'L' || c == 'R') newChar = 'W';
+                        result.append(newChar);
+                    }
+                } else {
+                    result.append(token); // light mode just keeps the word
+                }
+
+                first = false;
+            }
+        }
+
+        return result.toString();
     }
 }

@@ -15,6 +15,10 @@ import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetInfo;
 import java.io.*;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.MenuEntry;
+import net.runelite.api.MenuAction;
+import net.runelite.api.events.MenuOpened;
 
 @Slf4j
 @PluginDescriptor(
@@ -61,9 +65,68 @@ public class uwuScapePlugin extends Plugin
 				widget.setText(text);
 			});
 		}
-	}
+        else if (e.getGroupId() == WidgetID.DIALOG_OPTION_GROUP_ID)
+        {
+            clientThread.invokeLater(() ->
+            {
+                Widget parent = client.getWidget(WidgetID.DIALOG_OPTION_GROUP_ID, 1); // main container
+                if (parent == null) return;
 
-	@Subscribe
+                for (Widget child : parent.getChildren())
+                {
+                    if (child.getText() != null)
+                    {
+                        String converted = Owoify.convert(child.getText(), config);
+                        child.setText(converted);
+                    }
+                }
+            });
+        }
+    }
+
+/*    @Subscribe(priority = 100)
+    public void onMenuEntryAdded(MenuEntryAdded e)
+    {
+        if (!config.convertRightClick()) return;
+
+        MenuEntry entry = e.getMenuEntry();
+        if (entry == null) return;
+
+        // Skip left-click Walk here
+        if (entry.getType() == MenuAction.WALK) return;
+
+        // Convert option and target
+        if (entry.getOption() != null)
+            entry.setOption(Owoify.convertMenuText(entry.getOption(), config));
+        if (entry.getTarget() != null)
+            entry.setTarget(Owoify.convertMenuText(entry.getTarget(), config));
+    }
+
+    // --- shift/right-click handled when the menu fully opens ---
+    @Subscribe(priority = -10)
+    public void onMenuOpened(MenuOpened e)
+    {
+        if (!config.convertRightClick()) return;
+
+        MenuEntry[] entries = e.getMenuEntries();
+        if (entries == null || entries.length == 0) return;
+
+        for (MenuEntry entry : entries)
+        {
+            if (entry == null) continue;
+
+            if (entry.getOption() != null)
+                entry.setOption(Owoify.convertMenuText(entry.getOption(), config));
+
+            if (entry.getTarget() != null)
+                entry.setTarget(Owoify.convertMenuText(entry.getTarget(), config));
+        }
+
+        client.setMenuEntries(entries);
+    }*/
+
+
+    @Subscribe
 	public void onChatMessage(ChatMessage e) throws IOException {
 		if(e.getType().equals(ChatMessageType.DIALOG)) {
 			return;
