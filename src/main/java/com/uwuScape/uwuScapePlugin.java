@@ -11,14 +11,14 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.api.widgets.InterfaceID;
+import net.runelite.api.widgets.ComponentID;
 import java.io.*;
 import net.runelite.client.callback.ClientThread;
-import net.runelite.api.events.MenuEntryAdded;
+/*import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.MenuAction;
-import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.MenuOpened;*/
 
 @Slf4j
 @PluginDescriptor(
@@ -47,35 +47,34 @@ public class uwuScapePlugin extends Plugin
 		log.info("uwuScape stopped!");
 	}
 
-	@Subscribe
-	public void onWidgetLoaded(WidgetLoaded e) {
-		if(e.getGroupId() == WidgetID.DIALOG_NPC_GROUP_ID) {
-			Widget widget = client.getWidget(WidgetInfo.DIALOG_NPC_TEXT.getPackedId());
-			clientThread.invokeLater(() -> {
-				//System.out.println("Raw input: [" + widget.getText() + "]");
-
-				String text = Owoify.convert(widget.getText(), config);
-				widget.setText(text);
-			});
-		}
-		else if(e.getGroupId() == WidgetID.DIALOG_PLAYER_GROUP_ID) {
-			Widget widget = client.getWidget(WidgetInfo.DIALOG_PLAYER_TEXT.getPackedId());
-			clientThread.invokeLater(() -> {
-				String text = Owoify.convert(widget.getText(), config);
-				widget.setText(text);
-			});
-		}
-        else if (e.getGroupId() == WidgetID.DIALOG_OPTION_GROUP_ID)
-        {
-            clientThread.invokeLater(() ->
-            {
-                Widget parent = client.getWidget(WidgetID.DIALOG_OPTION_GROUP_ID, 1); // main container
+    @Subscribe
+    public void onWidgetLoaded(WidgetLoaded e) {
+        // NPC dialogue
+        if (e.getGroupId() == InterfaceID.DIALOG_NPC) {
+            Widget widget = client.getWidget(ComponentID.DIALOG_NPC_TEXT);
+            clientThread.invokeLater(() -> {
+                if (widget == null || widget.getText() == null) return;
+                String text = Owoify.convert(widget.getText(), config);
+                widget.setText(text);
+            });
+        }
+        // Player dialogue
+        else if (e.getGroupId() == InterfaceID.DIALOG_PLAYER) {
+            Widget widget = client.getWidget(ComponentID.DIALOG_PLAYER_TEXT);
+            clientThread.invokeLater(() -> {
+                if (widget == null || widget.getText() == null) return;
+                String text = Owoify.convert(widget.getText(), config);
+                widget.setText(text);
+            });
+        }
+        // Dialogue options
+        else if (e.getGroupId() == InterfaceID.DIALOG_OPTION) {
+            clientThread.invokeLater(() -> {
+                Widget parent = client.getWidget(InterfaceID.DIALOG_OPTION, 1); // main container
                 if (parent == null) return;
 
-                for (Widget child : parent.getChildren())
-                {
-                    if (child.getText() != null)
-                    {
+                for (Widget child : parent.getChildren()) {
+                    if (child.getText() != null) {
                         String converted = Owoify.convert(child.getText(), config);
                         child.setText(converted);
                     }
