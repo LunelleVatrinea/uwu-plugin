@@ -17,7 +17,7 @@ public interface uwuScapeConfig extends Config
 
 	@ConfigItem(
 		keyName = "uwuSpeak",
-		name = "uwu speak",
+		name = "UwU Speak",
 		description = "Whether to replace all text with partial or full uwu speak",
 		section = uwuify,
 		position = 1
@@ -39,7 +39,7 @@ public interface uwuScapeConfig extends Config
 	}
 	@ConfigItem(
 			keyName = "randomPrefix",
-			name = "random thematic prefixes",
+			name = "Random Thematic Prefixes",
 			description = "Whether to randomly add thematic prefixes to messages",
 			section = uwuify,
 			position = 3
@@ -50,7 +50,7 @@ public interface uwuScapeConfig extends Config
 	}
 	@ConfigItem(
 			keyName = "randomEmotes",
-			name = "Random cute Emotes",
+			name = "Random Cute Emotes",
 			description = "Whether to randomly add cute emotes to the ends of messages",
 			section = uwuify,
 			position = 4

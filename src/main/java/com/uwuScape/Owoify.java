@@ -74,6 +74,50 @@ public class Owoify {
             return text;
         }
 
+        String cleanedForGhostCheck = text
+                // remove HTML tags like <col=...>, <br>, etc.
+                .replaceAll("(?i)<[^>]+>", " ")
+                // replace <br/> with space (if not already handled)
+                .replaceAll("(?i)<br\\s*/?>", " ")
+                // remove any non-letter / non-space characters (punctuation)
+                .replaceAll("[^A-Za-z\\s]", " ")
+                .trim()
+                .toLowerCase();
+
+        if (!cleanedForGhostCheck.isEmpty() && cleanedForGhostCheck.matches("^(w[o]+)(\\s+w[o]+)*$"))
+        {
+            // It's ghost speech — build uwu noise without prefixes/emotes
+            String[] ghostWords = cleanedForGhostCheck.split("\\s+");
+            StringBuilder ghostResult = new StringBuilder();
+
+            for (int i = 0; i < ghostWords.length; i++)
+            {
+                String w = ghostWords[i];
+
+                // count the number of 'o'
+                int oCount = 0;
+                for (char c : w.toCharArray())
+                {
+                    if (c == 'o') oCount++;
+                }
+
+                // "wooo" -> "w" + (oCount) * "u"
+                StringBuilder newGhost = new StringBuilder("uw");
+                for (int j = 0; j < oCount; j++) newGhost.append('u');
+
+                if (i > 0) ghostResult.append(" ");
+                ghostResult.append(newGhost);
+            }
+            if (Math.random() < 0.2 && config.randomEmotes())
+            {
+                ghostResult.append(
+                        emojiSuffixes.get((int)(Math.random() * emojiSuffixes.size()))
+                );
+            }
+
+            return ghostResult.toString();
+        }
+
         text = text.replaceAll("(?i)<br\\s*/?>", " ");
         String[] words = text.split("\\s+");
         String result = "";

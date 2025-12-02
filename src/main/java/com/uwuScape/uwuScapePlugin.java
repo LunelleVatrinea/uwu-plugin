@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.Actor;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -137,6 +138,13 @@ public class uwuScapePlugin extends Plugin
 
 	@Subscribe
 	public void onOverheadTextChanged(OverheadTextChanged e) {
+        Actor actor = e.getActor();
+
+        // If overhead is being cleared, do NOT rewrite it
+        if (actor.getOverheadCycle() == -1 || e.getOverheadText().isEmpty())
+        {
+            return;
+        }
 		String text = Owoify.convert(e.getOverheadText(), config);
 		e.getActor().setOverheadText(text);
 		e.getActor().setOverheadCycle(30);
