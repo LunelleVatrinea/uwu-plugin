@@ -15,7 +15,7 @@ public class Owoify {
             "*giggles* ",
             "hehe ",
             "rawr~ ",
-            "rawr x3",
+            "rawr x3 ",
             "teehee ",
             "*boops your nose* ",
             "*runs in circles* ",
@@ -26,7 +26,7 @@ public class Owoify {
             "gib pats pws! "
             );
 
-    private static final List<String> emojiSuffixes = Arrays.asList("~", " :3", " x3", " ^_^", " UwU", " owo", "OwO", "uwu");
+    private static final List<String> emojiSuffixes = Arrays.asList("~", " :3", " x3", " ^_^", " UwU", " owo", " OwO", " uwu");
 
     static {
         wordMap.put("love", "wuv");
@@ -68,12 +68,14 @@ public class Owoify {
         wordMap.put("little", "wittwe");
     }
 
-    public static String convert(String text, uwuScapeConfig config) {
-        if (config.owoifyMode() == OwoifyMode.OFF)
+    public static String convert(String text, uwuScapeConfig config)
+    {
+        if (config.owoifyMode() == OwoifyMode.OFF || text == null || text.isEmpty())
         {
             return text;
         }
 
+        // ---------- GHOST CHECK (ignore tags) ----------
         String cleanedForGhostCheck = text
                 // remove HTML tags like <col=...>, <br>, etc.
                 .replaceAll("(?i)<[^>]+>", " ")
@@ -84,7 +86,11 @@ public class Owoify {
                 .trim()
                 .toLowerCase();
 
-        if (!cleanedForGhostCheck.isEmpty() && cleanedForGhostCheck.matches("^(w[o]+)(\\s+w[o]+)*$"))
+        boolean isGhost =
+                !cleanedForGhostCheck.isEmpty() &&
+                        cleanedForGhostCheck.matches("^(w[o]+)(\\s+w[o]+)*$");
+
+        if (isGhost)
         {
             // It's ghost speech — build uwu noise without prefixes/emotes
             String[] ghostWords = cleanedForGhostCheck.split("\\s+");
@@ -97,17 +103,17 @@ public class Owoify {
                 // count the number of 'o'
                 int oCount = 0;
                 for (char c : w.toCharArray())
-                {
                     if (c == 'o') oCount++;
-                }
 
                 // "wooo" -> "w" + (oCount) * "u"
                 StringBuilder newGhost = new StringBuilder("uw");
-                for (int j = 0; j < oCount; j++) newGhost.append('u');
+                for (int j = 0; j < oCount; j++)
+                    newGhost.append('u');
 
                 if (i > 0) ghostResult.append(" ");
                 ghostResult.append(newGhost);
             }
+
             if (Math.random() < 0.2 && config.randomEmotes())
             {
                 ghostResult.append(
@@ -118,50 +124,91 @@ public class Owoify {
             return ghostResult.toString();
         }
 
+        // ---------- PRESERVE TAGS ----------
+        Pattern pattern = Pattern.compile("(<[^>]+>)");
+        Matcher matcher = pattern.matcher(text);
+
+        StringBuilder finalResult = new StringBuilder();
+
+        int lastEnd = 0;
+
+        while (matcher.find())
+        {
+            // convert text before tag
+            String before = text.substring(lastEnd, matcher.start());
+            finalResult.append(convertPlain(before, config));
+
+            // append tag unchanged
+            finalResult.append(matcher.group());
+
+            lastEnd = matcher.end();
+        }
+
+        // convert remaining text
+        if (lastEnd < text.length())
+        {
+            finalResult.append(convertPlain(text.substring(lastEnd), config));
+        }
+
+        return finalResult.toString();
+    }
+
+
+    private static String convertPlain(String text, uwuScapeConfig config)
+    {
         text = text.replaceAll("(?i)<br\\s*/?>", " ");
+
         String[] words = text.split("\\s+");
         String result = "";
 
         double roll = Math.floor(Math.random()*7);
 
-        if(roll == 0 && config.randomPrefix()) {
-            result += prefixes.get((int) Math.floor(Math.random() * prefixes.size()));
+        if (roll == 0 && config.randomPrefix())
+        {
+            result += prefixes.get((int) (Math.random() * prefixes.size()));
         }
-
 
         boolean first = true;
 
-        for(String w : words) {
+        for (String w : words)
+        {
             String cleanWord = w.replaceAll("[^a-zA-Z]", "").toLowerCase();
             String replaced = wordMap.get(cleanWord);
-            if(replaced != null) {
+
+            if (replaced != null)
+            {
                 String punctuation = w.replaceAll("[a-zA-Z]", "");
                 result += " " + replaced + punctuation;
             }
-            else if (config.owoifyMode() == OwoifyMode.FULL) {
+            else if (config.owoifyMode() == OwoifyMode.FULL)
+            {
                 result += " ";
-                for(char c : w.toCharArray()) {
+                for (char c : w.toCharArray())
+                {
                     char newChar = c;
-                    if(c == 'l' || c == 'r') {
-                        newChar = 'w';
-                    }
-                    else if(c == 'L' || c == 'R') {
-                        newChar = 'W';
-                    }
+
+                    if (c == 'l' || c == 'r') newChar = 'w';
+                    else if (c == 'L' || c == 'R') newChar = 'W';
 
                     result += newChar;
                 }
-            } else {
+            }
+            else
+            {
                 result += (first ? "" : " ") + w;
             }
+
             first = false;
         }
+
         if (Math.random() < 0.2 && config.randomEmotes())
         {
             result += emojiSuffixes.get((int)(Math.random() * emojiSuffixes.size()));
         }
+
         return result;
     }
+
 
     public static String convertMenuText(String text, uwuScapeConfig config) {
         if (config.owoifyMode() == OwoifyMode.OFF) {
