@@ -8,22 +8,22 @@ import java.util.regex.Matcher;
 public class Owoify {
     private static Map<String, String> wordMap = new HashMap();
     private static List<String> prefixes = Arrays.asList(
-            "OwO whats this? ",
-            "*nuzzles* ",
-            "*waises paw* ",
-            "*blushes* ",
-            "*giggles* ",
-            "hehe ",
-            "rawr~ ",
-            "rawr x3 ",
-            "teehee ",
-            "*boops your nose* ",
-            "*runs in circles* ",
-            "H-hewwo?? ",
-            "*licks paw* ",
-            "nya~ ",
-            "*shakes tail* ",
-            "gib pats pws! "
+            "OwO whats this?",
+            "*nuzzles*",
+            "*waises paw*",
+            "*blushes*",
+            "*giggles*",
+            "hehe",
+            "rawr~",
+            "rawr x3",
+            "teehee",
+            "*boops your nose*",
+            "*runs in circles*",
+            "H-hewwo??",
+            "*licks paw*",
+            "nya~",
+            "*shakes tail*",
+            "gib pats pws!"
             );
 
     private static final List<String> emojiSuffixes = Arrays.asList("~", " :3", " x3", " ^_^", " UwU", " owo", " OwO", " uwu");
@@ -74,13 +74,17 @@ public class Owoify {
         {
             return text;
         }
+        //System.out.println("RAW Input: " + text);
+
+        text = text
+                .replaceAll("(?i)<br\\s*/?>", " ")
+                .replace('\n', ' ')
+                .replace('\r', ' ');
 
         // ---------- GHOST CHECK (ignore tags) ----------
         String cleanedForGhostCheck = text
                 // remove HTML tags like <col=...>, <br>, etc.
                 .replaceAll("(?i)<[^>]+>", " ")
-                // replace <br/> with space (if not already handled)
-                .replaceAll("(?i)<br\\s*/?>", " ")
                 // remove any non-letter / non-space characters (punctuation)
                 .replaceAll("[^A-Za-z\\s]", " ")
                 .trim()
@@ -132,6 +136,13 @@ public class Owoify {
 
         int lastEnd = 0;
 
+        double roll = Math.floor(Math.random()*7);
+
+        if (roll == 0 && config.randomPrefix())
+        {
+            finalResult.append(prefixes.get((int) (Math.random() * prefixes.size())));
+        }
+
         while (matcher.find())
         {
             // convert text before tag
@@ -150,23 +161,20 @@ public class Owoify {
             finalResult.append(convertPlain(text.substring(lastEnd), config));
         }
 
+        if (Math.random() < 0.2 && config.randomEmotes())
+        {
+            finalResult.append(emojiSuffixes.get((int)(Math.random() * emojiSuffixes.size())));
+        }
+
+        //System.out.println("RAW Output: " + finalResult);
         return finalResult.toString();
     }
 
 
     private static String convertPlain(String text, uwuScapeConfig config)
     {
-        text = text.replaceAll("(?i)<br\\s*/?>", " ");
-
         String[] words = text.split("\\s+");
         String result = "";
-
-        double roll = Math.floor(Math.random()*7);
-
-        if (roll == 0 && config.randomPrefix())
-        {
-            result += prefixes.get((int) (Math.random() * prefixes.size()));
-        }
 
         boolean first = true;
 
@@ -199,11 +207,6 @@ public class Owoify {
             }
 
             first = false;
-        }
-
-        if (Math.random() < 0.2 && config.randomEmotes())
-        {
-            result += emojiSuffixes.get((int)(Math.random() * emojiSuffixes.size()));
         }
 
         return result;
